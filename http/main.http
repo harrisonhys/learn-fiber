@@ -1,4 +1,17 @@
 ### Index ###
-GET  http://localhost:8008
+GET  http://localhost:8008/api/users?page=1&perpage=10
 Content-Type: : application/json
 Accept: application/json
+
+
+### Store ###
+POST  http://localhost:8008/api/users
+Content-Type: : application/json
+Accept: application/json
+
+{
+    "name": "Harrison",
+    "email": "harrison@gmail.com",
+    "password": "123456"
+}
+

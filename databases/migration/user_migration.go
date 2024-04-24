@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/harrisonhys/learn-fiber/config"
-	"github.com/harrisonhys/learn-fiber/entities"
+	"github.com/harrisonhys/learn-fiber/models/entities"
 )
 
 func MigrateUser() {

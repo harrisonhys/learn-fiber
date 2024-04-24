@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/harrisonhys/learn-fiber/config"
-	"github.com/harrisonhys/learn-fiber/entities/migration"
+	"github.com/harrisonhys/learn-fiber/databases/migration"
 	"github.com/harrisonhys/learn-fiber/routers"
 )
 

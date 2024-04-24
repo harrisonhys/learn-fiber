@@ -6,5 +6,6 @@ import (
 )
 
 func MainRouter(c *fiber.App) {
-	c.Get("/", controllers.UserControllerShow)
+	c.Get("/api/users", controllers.UserControllerShow)
+	c.Post("/api/users", controllers.UserControllerCreate)
 }
