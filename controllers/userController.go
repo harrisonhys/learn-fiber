@@ -90,6 +90,21 @@ func UserControllerCreate(c *fiber.Ctx) error {
 			"message": "Invalid request body",
 		})
 	}
+	//Validate
+	if err := user.Validate(); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed Input new data",
+			"error":   err.Error(),
+		})
+	}
+	// Check Email Already Use
+	var existingUser entities.User
+	result := config.DB.Where("email = ?", user.Email).First(&existingUser)
+	if result.Error == nil {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"message": "Email already in use",
+		})
+	}
 
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -114,4 +129,94 @@ func UserControllerCreate(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(newUser)
+}
+
+func UserControllerById(c *fiber.Ctx) error {
+	userId := c.Params("userId")
+	var user entities.User
+	result := config.DB.First(&user, userId)
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "User not found",
+		})
+	}
+	return c.JSON(user)
+}
+
+func UserControllerUpdate(c *fiber.Ctx) error {
+	userId := c.Params("userId")
+	var user entities.User
+	result := config.DB.First(&user, userId)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "User not found",
+		})
+	}
+
+	// Parse the request body into user request struct
+	updateData := new(req.UserUpdateReq)
+	if err := c.BodyParser(updateData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+		})
+	}
+
+	// Validate the updated data
+	if err := updateData.ValidateOnUpdate(); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Validation failed",
+			"error":   err.Error(),
+		})
+	}
+
+	// Check if the email is being updated to one that is already in use
+	if updateData.Email != user.Email {
+		var existingUser entities.User
+		result := config.DB.Where("email = ?", updateData.Email).First(&existingUser)
+		if result.Error == nil {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"message": "Email already in use",
+			})
+		}
+	}
+
+	// Hash the new password if it's provided
+	if updateData.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updateData.Password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Println(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to hash password",
+			})
+		}
+		user.Password = string(hashedPassword)
+	}
+
+	// Update the user fields
+	user.Name = updateData.Name
+	user.Email = updateData.Email
+
+	// Save the updated user
+	if err := config.DB.Save(&user).Error; err != nil {
+		log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	return c.JSON(user)
+}
+
+func UserControllerDelete(c *fiber.Ctx) error {
+	userId := c.Params("userId")
+	var user entities.User
+	result := config.DB.First(&user, userId)
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "User not found",
+		})
+	}
+	config.DB.Delete(&user)
+	return c.Status(fiber.StatusNoContent).JSON(nil)
 }

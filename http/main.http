@@ -3,6 +3,10 @@ GET  http://localhost:8008/api/users?page=1&perpage=10
 Content-Type: : application/json
 Accept: application/json
 
+### Detail ###
+GET  http://localhost:8008/api/users/1
+Content-Type: : application/json
+Accept: application/json
 
 ### Store ###
 POST  http://localhost:8008/api/users
@@ -12,6 +16,17 @@ Accept: application/json
 {
     "name": "Harrison",
     "email": "harrison@gmail.com",
-    "password": "123456"
+    "password": "4251243"
+}
+
+### Update ###
+PUT http://localhost:8008/api/users/1
+Content-Type: : application/json
+Accept: application/json
+
+{
+    "name": "users1",
+    "email": "users1@gmail.com",
+    "password": ""
 }
 
